@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using DataIngestion.Services;
@@ -8,7 +9,7 @@ public class Program
 {
     public static async Task Main(string[] args)
     {
-        Console.WriteLine("Starting Kaggle API clien...");
+        Console.WriteLine("Starting Kaggle API client...");
 
         IConfiguration config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
@@ -27,20 +28,53 @@ public class Program
         // 4. Check the result and print it
         if (resultJson != null)
         {
-            Console.WriteLine("\n-- API Response Received");
+            Console.WriteLine("\n-- API Response Received. Saving to file...");
 
-            // Pretty-print the JSON to make it readable
+
+            // Display the JSON to the user in the console
+            using var jDoc = JsonDocument.Parse(resultJson);
+            var formattedJson = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
+
+            // Block 1: Pretty-print the JSON to make it readable
             try
             {
-                using var jDoc = JsonDocument.Parse(resultJson);
-                var formattedJson = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
                 Console.WriteLine(formattedJson);
+
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
                 // If the response isn't valid JSON for some reason
                 Console.WriteLine(resultJson);
+                Console.WriteLine($"Error parsing JSON: {ex.Message}");
+
             }
+            // Block 2: Handle File saving logic
+            try
+            {
+                // Define the output directory and create a unique filename with a timestamp
+                string outputDirectory = "Output";
+                string fileName = $"kaggle_response_{searchTerm}_{DateTime.Now:yyyyMMdd_HHmmss}.txt";
+                string filePath = Path.Combine(outputDirectory, fileName);
+
+                // Ensure the 'Output' directory exists before trying to save the file
+                Directory.CreateDirectory(outputDirectory);
+
+                // Asynchronously write the raw JSON string to the file
+                await File.WriteAllTextAsync(filePath, formattedJson);
+
+
+                // Confirm to the user that the file was saved successfully
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Successfully saved API response to: {filePath}");
+                Console.ResetColor();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"An error occured while saving the file: {ex.Message}");
+                Console.ResetColor();
+            }
+
         }
         else
         {
