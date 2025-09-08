@@ -38,6 +38,52 @@ public class Program
             // Block 1: Pretty-print the JSON to make it readable
             try
             {
+                Console.WriteLine("\n--- API Response Received. Publishing to RabbitMQ... ---");
+
+                // 1. Create a connection to the server
+                var factory = new ConnectionFactory() { Uri = new Uri(rabbitMqConnectionString) };
+                using var connection = factory.CreateConnection();
+                using var channel = connection.CreateModel();
+
+                // 2. Declare an exchange and a queue
+                // The exchange is the "mail sorting centre"
+                channel.ExchangeDeclare(exchange: "data-ingestion-exchange", type: ExchangeType.Direct);
+
+                // The queue is the "mailbox"
+                channel.QueueDeclare(queue: "dataset-queue",
+                                     durable: true, // The queue will survive a server restart
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+
+                // 3. Bind the queue to the exchange with a routing key
+                // This tells the exchange where to send messages
+                channel.QueueBind(queue: "dataset-queue",
+                                  exchange: "data-ingestion-exchange",
+                                  routingKey: "dataset.new");
+
+
+                // 4. Prepare the message
+                var body = Encoding.UTF8.GetBytes(formattedJson);
+
+                // 5. Publish the message to the exchange with the routing key
+                channel.BasicPublish(exchange: "data-ingestion-exchange",
+                                     routingKey: "dataset.new",
+                                     basicProperties: null,
+                                     body: body);
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Message published to RabbitMQ successfully.");
+                Console.ResetColor();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Error publishing to RabbitMQ: {ex.Message}");
+                Console.ResetColor();
+            }
+            try
+            {
                 Console.WriteLine(formattedJson);
 
             }

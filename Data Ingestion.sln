@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataIngestionProject", "DataIngestionProject\DataIngestionProject.csproj", "{24479157-BF24-4693-A63F-FC050E5A530C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataIngestion", "DataIngestion\DataIngestion.csproj", "{24479157-BF24-4693-A63F-FC050E5A530C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DatabaseWriter.Worker", "DatabaseWriter.Worker\DatabaseWriter.Worker.csproj", "{118D71E5-B410-48C9-9F78-8269896DC8A4}"
 EndProject
