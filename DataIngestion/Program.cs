@@ -13,8 +13,8 @@ public class Program
 
         IConfiguration config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
 
-        string kaggleUsername = config["Kaggle:Username"]; // Place these in a seperate file and call them
-        string kaggleApiKey = config["Kaggle:ApiKey"]; // Place these in a seperate file and call them
+        string kaggleUsername = config["Kaggle:Username"]; // Set in user-secrets
+        string kaggleApiKey = config["Kaggle:ApiKey"]; // Set in user-secrets
 
         // 1. Create an instance of your service
         var apiClient = new KaggleApiClient(kaggleUsername, kaggleApiKey);
@@ -35,42 +35,17 @@ public class Program
             using var jDoc = JsonDocument.Parse(resultJson);
             var formattedJson = JsonSerializer.Serialize(jDoc, new JsonSerializerOptions { WriteIndented = true });
 
-            // Block 1: Pretty-print the JSON to make it readable
+            // Block 1: Publish message to RabbitMQ
             try
             {
                 Console.WriteLine("\n--- API Response Received. Publishing to RabbitMQ... ---");
 
-                // 1. Create a connection to the server
-                var factory = new ConnectionFactory() { Uri = new Uri(rabbitMqConnectionString) };
-                using var connection = factory.CreateConnection();
-                using var channel = connection.CreateModel();
+                // Create an instance of the new service
+                IMessagePublisher messagePublisher = new RabbitMqPublisher(rabbitMqConnection);
 
-                // 2. Declare an exchange and a queue
-                // The exchange is the "mail sorting centre"
-                channel.ExchangeDeclare(exchange: "data-ingestion-exchange", type: ExchangeType.Direct);
+                // Call the service
+                messagePublisher.Publish(resultJson);
 
-                // The queue is the "mailbox"
-                channel.QueueDeclare(queue: "dataset-queue",
-                                     durable: true, // The queue will survive a server restart
-                                     exclusive: false,
-                                     autoDelete: false,
-                                     arguments: null);
-
-                // 3. Bind the queue to the exchange with a routing key
-                // This tells the exchange where to send messages
-                channel.QueueBind(queue: "dataset-queue",
-                                  exchange: "data-ingestion-exchange",
-                                  routingKey: "dataset.new");
-
-
-                // 4. Prepare the message
-                var body = Encoding.UTF8.GetBytes(formattedJson);
-
-                // 5. Publish the message to the exchange with the routing key
-                channel.BasicPublish(exchange: "data-ingestion-exchange",
-                                     routingKey: "dataset.new",
-                                     basicProperties: null,
-                                     body: body);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Message published to RabbitMQ successfully.");
@@ -82,6 +57,7 @@ public class Program
                 Console.WriteLine($"Error publishing to RabbitMQ: {ex.Message}");
                 Console.ResetColor();
             }
+            // Block 2: Pretty-print the JSON to make it readable
             try
             {
                 Console.WriteLine(formattedJson);
@@ -94,7 +70,7 @@ public class Program
                 Console.WriteLine($"Error parsing JSON: {ex.Message}");
 
             }
-            // Block 2: Handle File saving logic
+            // Block 3: Handle File saving logic
             try
             {
                 // Define the output directory and create a unique filename with a timestamp
