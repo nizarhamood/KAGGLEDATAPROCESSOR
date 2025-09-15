@@ -2,7 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DatabaseWriter.Worker.Models;
+
+namespace DatabaseWriter.Worker.Services;
 
 public class DatasetRepository : IDatasetRepository
 {

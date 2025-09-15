@@ -10,7 +10,7 @@ namespace DataIngestion.Services
         private readonly string _connectionString;
 
         // The connection string is passed in when the service is created
-        public RabbitMqPublisher(string _connectionString)
+        public RabbitMqPublisher(string connectionString)
         {
             _connectionString = connectionString;
         }
