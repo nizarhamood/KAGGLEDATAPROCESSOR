@@ -11,10 +11,30 @@ public class Program
     {
         Console.WriteLine("Starting Kaggle API client...");
 
-        IConfiguration config = new ConfigurationBuilder().AddUserSecrets<Program>().Build();
+        IConfiguration config = new ConfigurationBuilder()
+            .AddUserSecrets<Program>()
+            .Build();
 
-        string kaggleUsername = config["Kaggle:Username"]; // Set in user-secrets
-        string kaggleApiKey = config["Kaggle:ApiKey"]; // Set in user-secrets
+        string? kaggleUsername = config["Kaggle:Username"]; // Set in user-secrets
+        string? kaggleApiKey = config["Kaggle:ApiKey"]; // Set in user-secrets
+        string? rabbitMqConnection = config["RabbitMQ:ConnectionString"]; // Set in user-secrets
+
+        // Validate configuration
+        if (string.IsNullOrEmpty(kaggleUsername) || string.IsNullOrEmpty(kaggleApiKey))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Error: Kaggle credentials not found in user secrets.");
+            Console.ResetColor();
+            return;
+        }
+
+        if (string.IsNullOrEmpty(rabbitMqConnection))
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Error: RabbitMQ connection string not found in user secrets.");
+            Console.ResetColor();
+            return;
+        }
 
         // 1. Create an instance of your service
         var apiClient = new KaggleApiClient(kaggleUsername, kaggleApiKey);
@@ -23,13 +43,12 @@ public class Program
         string searchTerm = "airbnb";
 
         // 3. Call the method on the instance and 'await' the result
-        string resultJson = await apiClient.ListDatasetsAsync(searchTerm);
+        string? resultJson = await apiClient.ListDatasetsAsync(searchTerm);
 
         // 4. Check the result and print it
         if (resultJson != null)
         {
             Console.WriteLine("\n-- API Response Received. Saving to file...");
-
 
             // Display the JSON to the user in the console
             using var jDoc = JsonDocument.Parse(resultJson);
@@ -46,7 +65,6 @@ public class Program
                 // Call the service
                 messagePublisher.Publish(resultJson);
 
-
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("Message published to RabbitMQ successfully.");
                 Console.ResetColor();
@@ -57,19 +75,19 @@ public class Program
                 Console.WriteLine($"Error publishing to RabbitMQ: {ex.Message}");
                 Console.ResetColor();
             }
+
             // Block 2: Pretty-print the JSON to make it readable
             try
             {
                 Console.WriteLine(formattedJson);
-
             }
             catch (JsonException ex)
             {
                 // If the response isn't valid JSON for some reason
                 Console.WriteLine(resultJson);
                 Console.WriteLine($"Error parsing JSON: {ex.Message}");
-
             }
+
             // Block 3: Handle File saving logic
             try
             {
@@ -84,7 +102,6 @@ public class Program
                 // Asynchronously write the raw JSON string to the file
                 await File.WriteAllTextAsync(filePath, formattedJson);
 
-
                 // Confirm to the user that the file was saved successfully
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"Successfully saved API response to: {filePath}");
@@ -96,7 +113,6 @@ public class Program
                 Console.WriteLine($"An error occured while saving the file: {ex.Message}");
                 Console.ResetColor();
             }
-
         }
         else
         {

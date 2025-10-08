@@ -1,7 +1,10 @@
 // DatabaseWriter.Worker/Services/DatasetRepository.cs
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using DatabaseWriter.Worker.Models;
+using Microsoft.Extensions.Configuration;
 
 namespace DatabaseWriter.Worker.Services;
 
@@ -12,7 +15,7 @@ public class DatasetRepository : IDatasetRepository
     public DatasetRepository(IConfiguration configuration)
     {
         // Get the connection string from the configuration
-        _connectionString = configuration.GetConnectionString("Database");
+        _connectionString = configuration.GetConnectionString("Database") ?? string.Empty;
     }
 
     public async Task SaveDatasetsAsync(IEnumerable<Dataset> datasets)

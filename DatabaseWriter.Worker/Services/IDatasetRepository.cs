@@ -1,10 +1,11 @@
-// In DatabaseWriter.Worker/Services/IDatasetRepository.cs
+// DatabaseWriter.Worker/Services/IDatasetRepository.cs
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DatabaseWriter.Worker.Models;
 
-namespace DatabaseWrite.Worker.Services;
+namespace DatabaseWriter.Worker.Services;
 
 public interface IDatasetRepository
 {
-    Task SaveDatasetsAsync(IEnumerable<DatabaseWriter> datasets);
+    Task SaveDatasetsAsync(IEnumerable<Dataset> datasets);
 }
