@@ -1,0 +1,23 @@
+﻿<Window x:Class="DataIngestion.GUI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DataIngestion.GUI"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="618" Width="1244">
+    <Grid VerticalAlignment="Bottom" RenderTransformOrigin="0.5,0.434">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="651*"/>
+            <ColumnDefinition Width="591*"/>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition Width="0*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <DataGrid x:Name="searchResultDataGrid" AutoGenerateColumns="True" d:ItemsSource="{d:SampleData ItemCount=5}" Grid.ColumnSpan="2" Height="500"/>
+        <Button x:Name="searchButton" Content="Search" Click="SearchButton_Click" HorizontalAlignment="Left" Margin="213,-70,0,0" VerticalAlignment="Top" Width="61" Height="22"/>
+        <TextBox x:Name="searchInput" HorizontalAlignment="Left" Margin="63,-68,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" Height="18"/>
+        <Label x:Name="searchLabel" Content="Search:" HorizontalAlignment="Left" Margin="10,-72,0,0" VerticalAlignment="Top" Height="26" Width="48"/>
+    </Grid>
+</Window>

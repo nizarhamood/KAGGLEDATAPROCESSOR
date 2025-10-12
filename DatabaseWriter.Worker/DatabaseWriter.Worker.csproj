@@ -8,7 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Core Worker Service framework -->
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
+    
+    <!-- Configuration system (read appsettings.json, environment variables, etc.) -->
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
+    
+    <!-- User Secrets support (secure storage for development secrets) -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.8" />
+    
+    <!-- RabbitMQ client library -->
     <PackageReference Include="RabbitMQ.Client" Version="7.1.2" />
   </ItemGroup>
 </Project>
